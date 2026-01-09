@@ -1,8 +1,10 @@
-#!/usr/bin/env node
-
+import express from "express";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+
+const app = express();
+app.use(express.json());
 
 const server = new Server(
   {
@@ -12,46 +14,33 @@ const server = new Server(
   {
     tools: {
       scan_jobs: {
-        description: "Scan configured remote job boards and return relevant engineering jobs based on resume variant and target continents.",
+        description: "Scan remote job boards",
         inputSchema: z.object({
           resumeVariant: z.enum(["US", "EU", "GULF", "ASIA"]),
           continents: z.array(
             z.enum(["NORTH_AMERICA", "EUROPE", "ASIA"])
           ),
         }),
-        outputSchema: z.object({
-          jobs: z.array(
-            z.object({
-              id: z.string(),
-              title: z.string(),
-              company: z.string(),
-              applyUrl: z.string(),
-              relevanceScore: z.number(),
-              relevanceReason: z.string(),
-            })
-          ),
+        handler: async () => ({
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify({ jobs: [] }, null, 2),
+            },
+          ],
         }),
-        handler: async () => {
-          return {
-            content: [
-              {
-                type: "text",
-                text: JSON.stringify(
-                  {
-                    jobs: [],
-                  },
-                  null,
-                  2
-                ),
-              },
-            ],
-          };
-        },
       },
     },
-    resources: {},
   }
 );
 
-const transport = new StdioServerTransport();
+const transport = new StreamableHTTPServerTransport({
+  app,
+  path: "/mcp",
+});
+
 await server.connect(transport);
+
+app.listen(3333, () => {
+  console.log("MCP server running at http://localhost:3333/mcp");
+});

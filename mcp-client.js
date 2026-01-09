@@ -1,10 +1,9 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 
-const transport = new StdioClientTransport({
-  command: "node",
-  args: ["mcp-server/index.js"],
-});
+const transport = new StreamableHTTPClientTransport(
+  "http://localhost:3333/mcp"
+);
 
 const client = new Client({
   name: "job-discovery-client",
