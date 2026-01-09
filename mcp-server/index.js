@@ -33,7 +33,18 @@ const server = new Server(
         }),
         handler: async () => {
           return {
-            jobs: [],
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(
+                  {
+                    jobs: [],
+                  },
+                  null,
+                  2
+                ),
+              },
+            ],
           };
         },
       },
